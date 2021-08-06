@@ -1,0 +1,14 @@
+1. Windows is used for execution of this project.
+2. Open command prompt and run the makefile using the make command.
+3. After executing the make command execute the output file by typing output on the command prompt.
+4. to exit press ctrl+c or close the command prompt.
+
+If make command is not working type following commands in given order(for windows):
+ 
+    bison -d assignment.ypp
+
+    flex -olex.yy.cpp assignment.lpp
+
+    g++ assingment.cpp assignment.tab.cpp lex.yy.cpp -o output
+
+    output

@@ -1,0 +1,60 @@
+%{
+    #include"assignment.tab.hpp"
+    #include<bits/stdc++.h>
+    #include<string>
+    using namespace std;
+%}
+%option noyywrap
+%%
+"." {return stop;}
+
+","   {return comma;}
+
+"ADD"|"SUBTRACT"|"MULTIPLY"|"DIVIDE"   {    yylval.id = new string(yytext);
+                                            return operation;}
+                                            
+[Aa][Dd][Dd]|[Ss][Uu][Bb][Ss][Tt][Rr][Aa][Cc][Tt]|[Mm][Uu][Ll][Tt][Ii][Pp][Ll][Yy]|[Dd][Ii][Vv][Ii][Dd][Ee] {   yylval.id = new string(yytext);
+                                                                                                                    return small_operation;}
+
+"LEFT"|"RIGHT"|"UP"|"DOWN"  {   yylval.id = new string(yytext);
+                                return direction;}
+
+[Ll][Ee][Ff][Tt]|[Rr][Ii][Gg][Hh][Tt]|[Uu][Pp]|[Dd][Oo][Ww][Nn]  {  yylval.id = new string(yytext);
+                                                                    return small_direction;}
+
+"ASSIGN" {return assign;}
+
+"VALUE" {return value;}
+
+"VAR"   {return var;}
+
+"TO"    {return to;}
+
+"IS"    {return is;}
+
+"IN"    {return in;}
+
+[Aa][Ss][Ss][Ii][Gg][Nn] {return small_assign;}
+
+[Vv][Aa][Ll][Uu][Ee] {return small_value;}
+
+[Tt][Oo] {return small_to;}
+
+[Vv][Aa][Rr] {return small_var;}
+
+[Ii][Ss] {return small_is;}
+
+[Ii][Nn] {return small_in;}
+
+[0-9]+ {yylval.num = atoi(yytext);
+            return number;}
+
+[a-zA-Z0-9_\-@#\$%^&\*!\(\)\+\=\[\]\{\}\"\'\:\;\/\`\~\?\<\>]+ {yylval.id = new string(yytext);
+                                                                return identifier;}
+
+[\n] {return eol;}
+
+[ \t]+ {;}
+
+.  {;}
+%%

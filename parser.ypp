@@ -1,0 +1,191 @@
+%{
+    #include"assignment.h"
+    void yyerror (string s);
+%}
+%code requires 
+{
+    #include"assignment.h"
+
+    int yylex();
+    int yyparse(); 
+    void yyerror(string s);
+}
+
+%union {int num; std::string *id;}         /* Yacc definitions */
+%start line
+%token <id> operation small_operation
+%token <id> direction small_direction
+%token assign small_assign
+%token value eol small_value
+%token to small_to
+%token is small_is
+%token in small_in
+%token var small_var
+%token comma stop
+%token <num> number
+%token <id> identifier
+%type <num> line assignment move naming query wrong_move wrong_line assignment_1 move_1 naming_1 query_1
+
+%%
+
+line    : assignment    {print_output($1);YYACCEPT;}
+        | move	        {print_output(0);YYACCEPT;}
+        | naming	{print_output($1);YYACCEPT;}
+        | query         {print_output($1);YYACCEPT;}
+        | wrong_line {printf("full stop is missing\n");fprintf(stderr,"-1\n");YYACCEPT;}
+        | wrong_move6 {fprintf(stderr,"-1\n");YYACCEPT;}
+        | wrong_assign1 {fprintf(stderr,"-1\n");YYACCEPT;}
+        | wrong_var1 {fprintf(stderr,"-1\n");YYACCEPT;}
+        | wrong_value1 {fprintf(stderr,"-1\n");YYACCEPT;}
+        | error eol {printf("full stop missing.\n");print_output(1);YYABORT;}
+        | error stop eol {print_output(1);YYABORT;}
+        ;
+
+assignment  : assign number to number comma number stop eol {printf("assignment\n");$$ = assign_value($2,$4,$6); }
+        ;
+
+move    : operation direction stop eol {printf("move\n");Do_move($1,$2);$$=(int)0;}
+        ;
+
+naming  : var identifier is number comma number stop eol {printf("naming\n");$$ = set_name($2,$4,$6);}
+        ;
+
+query   : value in number comma number stop eol {printf("query\n");$$ = get_value($3,$5);}
+        ;
+
+assignment_1  : assign number to number comma number eol {printf("assignment\n");}
+        ;
+
+move_1    : operation direction eol {printf("move\n");}
+        ;
+
+naming_1  : var identifier is number comma number eol {printf("naming\n");}
+        ;
+
+query_1   : value in number comma number eol {printf("query\n");}
+        ;
+
+wrong_line    : assignment_1
+              | wrong_move
+              | move_1 
+              | naming_1
+              | query_1 
+              | wrong_assign
+              | wrong_var
+              | wrong_value
+              ;
+
+wrong_move      : wrong_move1 eol {printf("please use capital letters.\n");}
+                | wrong_move2 eol {printf("please use an operation before a direction.\n");}
+                | wrong_move3 eol {printf("please use an operation before a direction and capitalize the letters.\n");}
+                | wrong_move4 
+                ;
+
+wrong_move6     : wrong_move1 stop eol{printf("please use capital letters.\n");}
+                | wrong_move2 stop eol{printf("please use an operation before a direction.\n");}
+                | wrong_move3 stop eol{printf("please use an operation before a direction and capitalize the letters.\n");}
+                | wrong_move5
+                ;
+
+wrong_move1     : small_operation direction
+                | small_operation small_direction
+                | operation small_direction
+                ;
+
+wrong_move2     : direction operation   
+                ;
+
+wrong_move3     : small_direction operation
+                | small_direction small_operation
+                | direction small_operation
+                ;
+
+wrong_move4     : operation wrong_direction eol {printf("please enter correct direction.\n");}
+                | small_operation wrong_direction eol {printf("please enter correct direction and capitalize operation.\n")}
+                | wrong_operation direction eol {printf("please enter correct operation.\n");}
+                | wrong_operation small_direction eol {printf("please enter correct operation and capitalize direction.\n");}
+                ;
+
+wrong_move5     : operation wrong_direction stop eol {printf("please enter correct direction.\n");}
+                | small_operation wrong_direction stop eol {printf("please enter correct direction and capitalize operation.\n")}
+                | wrong_operation direction stop eol {printf("please enter correct operation.\n");}
+                | wrong_operation small_direction stop eol {printf("please enter correct operation and capitalize direction.\n");}
+                ;
+
+wrong_direction     : var
+                    | identifier
+                    | value
+                    ;
+
+wrong_operation     : wrong_direction
+                    ;
+
+wrong_assign        : small_assign number to number comma number eol {printf("please capitalize the assign command.\n");}
+                    | small_assign number small_to number comma number eol {printf("please capitalize the assign and to keywords.\n");}
+                    | assign number small_to number comma number eol {printf("please capitalize the to keyword.\n");}
+                    | assign keywords to number comma number eol {printf("keywords cannot be assigned as values.\n");}
+                    | assign identifier to number comma number eol {printf("Only numbers can be assigned as values.\n");}
+                    | small_assign keywords to number comma number eol {printf("keywords cannot be assigned as values and please capitalize the assign command.\n");}
+                    | small_assign keywords small_to number comma number eol {printf("keywords cannot be assigned as values and please capitalize the assign and to keywords.\n");}
+                    | assign keywords small_to number comma number eol {printf("keywords cannot be assigned as values and please capitalize the to keyword.\n");}
+                    | small_assign identifier to number comma number eol {printf("Only numbers can be assigned as values and please capitalize the assign command.\n");}
+                    | small_assign identifier small_to number comma number eol {printf("Only numbers can be assigned as values and please capitalize the assign and to keywords.\n");}
+                    | assign identifier small_to number comma number eol {printf("Only numbers can be assigned as values and please capitalize the to keyword.\n");}
+                    
+                    ;
+
+wrong_assign1       : small_assign number to number comma number stop eol {printf("please capitalize the assign command.\n");}
+                    | small_assign number small_to number comma number stop eol {printf("please capitalize the assign and to keywords.\n");}
+                    | assign number small_to number comma number stop eol {printf("please capitalize the to keyword.\n");}
+                    | assign keywords to number comma number stop eol {printf("keywords cannot be assigned as values.\n");}
+                    | assign identifier to number comma number stop eol {printf("Only numbers can be assigned as values.\n");}
+                    | small_assign keywords to number comma number stop eol {printf("keywords cannot be assigned as values and please capitalize the assign command.\n");}
+                    | small_assign keywords small_to number comma number stop eol {printf("keywords cannot be assigned as values and please capitalize the assign and to keywords.\n");}
+                    | assign keywords small_to number comma number stop eol {printf("keywords cannot be assigned as values and please capitalize the to keyword.\n");}
+                    | small_assign identifier to number comma number stop eol {printf("Only numbers can be assigned as values and please capitalize the assign command.\n");}
+                    | small_assign identifier small_to number comma number stop eol {printf("Only numbers can be assigned as values and please capitalize the assign and to keywords.\n");}
+                    | assign identifier small_to number comma number stop eol {printf("Only numbers can be assigned as values and please capitalize the to keyword.\n");}
+                    ;
+
+wrong_var           : small_var identifier is number comma number eol {printf("please capitalize the var command.\n");}
+                    | small_var identifier small_is number comma number eol {printf("please capitalize the var and is keywords.\n");}
+                    | var identifier small_is number comma number eol {printf("please capitalize the is keyword.\n");}
+                    | var keywords is number comma number eol {printf("keywords cannot be used as variables.\n");}
+                    | small_var keywords is number comma number eol {printf("keywords cannot be used as variables and please capitalize the var command.\n");}
+                    | small_var keywords small_is number comma number eol {printf("keywords cannot be used as variables and please capitalize the var and is keywords.\n");}
+                    | var keywords small_is number comma number eol {printf("keywords cannot be used as variables and please capitalize the is keyword.\n");}
+                    ;
+
+wrong_var1          : small_var identifier is number comma number stop eol {printf("please capitalize the var command.\n");}
+                    | small_var identifier small_is number comma number stop eol {printf("please capitalize the var and is keywords.\n");}
+                    | var identifier small_is number comma number stop eol {printf("please capitalize the is keyword.\n");}
+                    | var keywords is number comma number stop eol {printf("keywords cannot be used as variables.\n");}
+                    | small_var keywords is number comma number stop eol {printf("keywords cannot be used as variables and please capitalize the var command.\n");}
+                    | small_var keywords small_is number comma number stop eol {printf("keywords cannot be used as variables and please capitalize the var and is keywords.\n");}
+                    | var keywords small_is number comma number stop eol {printf("keywords cannot be used as variables and please capitalize the is keyword.\n");}
+                    ;
+                    
+wrong_value         : small_value in number comma number eol {printf("please capitalize the value command.\n");}
+                    | small_value small_in number comma number eol {printf("please capitalize the value and in keywords.\n");}
+                    | value small_in number comma number eol {printf("please capitalize the in keyword.\n");}
+                    ;
+
+wrong_value1        : small_value in number comma number stop eol {printf("please capitalize the value command.\n");}
+                    | small_value small_in number comma number stop eol {printf("please capitalize the value and in keywords.\n");}
+                    | value small_in number comma number stop eol {printf("please capitalize the in keyword.\n");}
+                    ;
+
+keywords            : direction
+                    | operation
+                    | to
+                    | is
+                    | in
+                    | var
+                    | value
+
+%%
+//c++ code
+void yyerror(string s)
+{
+    printf("Invalid expr\n");
+}
